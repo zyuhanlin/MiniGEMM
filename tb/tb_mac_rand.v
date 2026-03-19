@@ -1,3 +1,4 @@
+
 `timescale 1ns/1ps
 
 module tb_mac_rand;
@@ -28,9 +29,35 @@ module tb_mac_rand;
   task do_one(input integer aa, input integer bb);
     integer prod;
     begin
-      // drive inputs BEFORE rising edge
-      a = aa[7:0];
-      b = bb[7:0];
+	// drive inputs BEFORE rising edge
+	a = aa[7:0];
+	b = bb[7:0];
+
+	// 每 5 次里关 1 次 valid（例如 i=4,9,14,...时关）
+	valid = ((i % 5) != 4);
+
+	// compute product (always OK to compute)
+	prod = $signed(a) * $signed(b);
+
+	// 只有 valid=1 才更新 golden
+	if (valid) begin
+	gold = gold + prod;
+    end
+
+  @(posedge clk);
+  #1;
+
+  // acc 必须等于 golden（valid=0 时两者都应保持）
+  if (acc !== gold) begin
+	$display("FAIL at iter=%0d  valid=%0d a=%0d b=%0d  acc=%0d  gold=%0d",
+           i, valid, $signed(a), $signed(b), acc, gold);
+	$fatal;
+  end
+
+	// 交易结束后拉低 valid（可选，但习惯更清晰）
+	valid = 1'b0;      // drive inputs BEFORE rising edge
+	a = aa[7:0];
+	b = bb[7:0];
       valid = 1'b1;
 
       // golden uses EXACTLY what DUT sees (signed 8-bit)
