@@ -2,8 +2,9 @@
 Pipelined MAC-array accelerator (learning project).
 
 ## Status
-- [ ] MAC unit
-- [ ] Random test + Python golden
+- [X] MAC unit
+- [X] Random test(self-checking TB)
+- [ ] Python golden
 - [ ] Pipelined MAC
 - [ ] 4x4 MAC array
 - [ ] Streaming valid/ready

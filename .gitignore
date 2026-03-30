@@ -1,0 +1,13 @@
+# build artifacts
+sim
+*.out
+*.o
+
+# waveforms
+*.vcd
+
+# backup/temp
+*.save
+
+# generated vectors
+vectors.txt
