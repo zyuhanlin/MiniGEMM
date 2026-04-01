@@ -5,7 +5,7 @@ Pipelined MAC-array accelerator (learning project).
 - [X] MAC unit
 - [X] Random test(self-checking TB)
 - [ ] Python golden
-- [ ] Pipelined MAC
+- [X] Pipelined MAC
 - [ ] 4x4 MAC array
 - [ ] Streaming valid/ready
 - [ ] Benchmark plots
