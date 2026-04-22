@@ -73,7 +73,7 @@ module tb_tile4x4_pipe_struct;
       active_cycles = active_cycles + 1;
       mac_count     = mac_count + 16;   // 4x4 tile = 16 MACs per active cycle
 
-      // 检查上一拍对齐后的 expected
+      // check delayed expected from previous cycle
       if (exp_valid_d1) begin
         if (c00 !== exp00_d1 || c01 !== exp01_d1 || c02 !== exp02_d1 || c03 !== exp03_d1 ||
             c10 !== exp10_d1 || c11 !== exp11_d1 || c12 !== exp12_d1 || c13 !== exp13_d1 ||
@@ -93,7 +93,7 @@ module tb_tile4x4_pipe_struct;
         end
       end
 
-      // 当前 expected 留到下一拍检查
+      // save current expected for next cycle
       exp00_d1 = e00; exp01_d1 = e01; exp02_d1 = e02; exp03_d1 = e03;
       exp10_d1 = e10; exp11_d1 = e11; exp12_d1 = e12; exp13_d1 = e13;
       exp20_d1 = e20; exp21_d1 = e21; exp22_d1 = e22; exp23_d1 = e23;
@@ -104,7 +104,7 @@ module tb_tile4x4_pipe_struct;
     end
   endtask
 
-  task flush_one;
+task flush_one;
     begin
       valid = 1'b0;
 
@@ -157,28 +157,54 @@ module tb_tile4x4_pipe_struct;
     @(posedge clk);
     clear = 0;
 
-    // 只做 1 个 k-step:
-    // a = [1,2,3,4]^T
-    // b = [5,6,7,8]
-    // expected outer product:
-    // [ 5,  6,  7,  8]
-    // [10, 12, 14, 16]
-    // [15, 18, 21, 24]
-    // [20, 24, 28, 32]
+    // step 0: b = [1,1,1,1]
     drive_one(
       1, 2, 3, 4,
-      5, 6, 7, 8,
+      1, 1, 1, 1,
 
-      5,  6,  7,  8,
-      10, 12, 14, 16,
-      15, 18, 21, 24,
-      20, 24, 28, 32
+      1, 1, 1, 1,
+      2, 2, 2, 2,
+      3, 3, 3, 3,
+      4, 4, 4, 4
+    );
+
+    // step 1: b = [2,2,2,2]
+    drive_one(
+      1, 2, 3, 4,
+      2, 2, 2, 2,
+
+      3, 3, 3, 3,
+      6, 6, 6, 6,
+      9, 9, 9, 9,
+      12,12,12,12
+    );
+
+    // step 2: b = [3,3,3,3]
+    drive_one(
+      1, 2, 3, 4,
+      3, 3, 3, 3,
+
+      6, 6, 6, 6,
+      12,12,12,12,
+      18,18,18,18,
+      24,24,24,24
+    );
+
+    // step 3: b = [4,4,4,4]
+    drive_one(
+      1, 2, 3, 4,
+      4, 4, 4, 4,
+
+      10,10,10,10,
+      20,20,20,20,
+      30,30,30,30,
+      40,40,40,40
     );
 
     // pipeline flush
     flush_one();
 
-    $display("PASS: tile4x4_pipe_struct 1-step test passed.");
+    $display("PASS: tile4x4_pipe_struct 4-step test passed.");
 
     $display("PERF(active): active_cycles=%0d total_macs=%0d macs_per_active_cycle=%0f",
              active_cycles, mac_count, mac_count * 1.0 / active_cycles);
